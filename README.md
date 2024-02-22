@@ -1,5 +1,5 @@
 # Python_2_Portfolio
-This is my python portfolio for Winter 2023-2024
+This is my python portfolio for Winter 2023-2024.
 
 # Sequence Objects Parts 1-4
 

@@ -4898,12 +4898,13 @@ for alignment in blast_record.alignments:
             print(hsp.sbjct[0:75] + "...")
 
 
-# Challenge 1
+
 
 ```python
 from Bio import SeqIO
 ```
 
+# Challenge 1
 
 ```python
 record = SeqIO.read("sequence.fasta", format = "fasta")
@@ -5723,6 +5724,854 @@ show_pic(blended)
 
 
 ![png](output_63_0.png)
+
+
+# Corner Detection
+
+In this analysis, we looked at methods to determine corners.
+
+```python
+# We will be using computer vision to detect features
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+```
+
+
+```python
+flat_chess = cv2.imread('chessboard.jpg')
+flat_chess = cv2.cvtColor(flat_chess, cv2.COLOR_BGR2RGB)
+plt.imshow(flat_chess)
+```
+
+
+```python
+# Let's use our flat chessboard
+gray_flat_chess = cv2.cvtColor(flat_chess, cv2.COLOR_BGR2GRAY)
+plt.imshow(gray_flat_chess, cmap = "gray")
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f978ca55950>
+
+
+
+
+![png](output_2_1.png)
+
+
+
+```python
+# Now let's plot our real board
+real_chess = cv2.imread("chessgame.jpg")
+real_chess = cv2.cvtColor(real_chess, cv2.COLOR_BGR2RGB)
+```
+
+
+```python
+plt.imshow(real_chess)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f978ca3a790>
+
+
+
+
+![png](output_4_1.png)
+
+
+
+```python
+# We can convert the board to gray
+gray_real_chess = cv2.cvtColor(real_chess, cv2.COLOR_BGR2GRAY)
+plt.imshow(gray_real_chess, cmap = 'gray')
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f978c99eb50>
+
+
+
+
+![png](output_5_1.png)
+
+
+
+```python
+# Let's use the corner Harris method
+gray = np.float32(gray_flat_chess)
+dst = cv2.cornerHarris(src = gray, blockSize = 2, ksize = 3, k = 0.04)
+
+dst = cv2.dilate(dst, None)
+```
+
+
+```python
+# We are going to detect the corners with red
+flat_chess[dst>0.01*dst.max()] = [255,0,0]
+
+plt.imshow(flat_chess)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f978c985d50>
+
+
+
+
+![png](output_7_1.png)
+
+
+
+```python
+gray = np.float32(gray_real_chess)
+dst = cv2.cornerHarris(src = gray, blockSize =2, ksize=3, k =0.04)
+dst = cv2.dilate(dst, None)
+
+real_chess[dst>0.01*dst.max()] = [255, 0, 0]
+
+plt.imshow(real_chess)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f97890b25d0>
+
+
+
+
+![png](output_8_1.png)
+
+
+
+```python
+# Shi-Tomasi Corner Detection
+corners = cv2.goodFeaturesToTrack(gray_flat_chess, 64, 0.01, 10)
+```
+
+
+```python
+corners = np.int0(corners)
+
+for i in corners:
+    x,y = i.ravel()
+    cv2.circle(flat_chess, (x,y),3,(255,0,0), -1)
+    
+plt.imshow(flat_chess)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f978901a4d0>
+
+
+
+
+![png](output_10_1.png)
+
+
+
+```python
+corners = cv2.goodFeaturesToTrack(gray_real_chess, 100, 0.01, 10)
+
+corners = np.int0(corners)
+
+for i in corners:
+    x, y = i.ravel()
+    cv2.circle(real_chess, (x,y), 3, (0,255,0), -1)
+
+plt.imshow(real_chess)
+```
+
+# Edge Detection
+
+In this analysis, we viewed ways to detect edges by using biological data.
+
+
+```python
+import cv2
+```
+
+
+```python
+import numpy as np
+```
+
+
+```python
+import matplotlib.pyplot as plt
+%matplotlib inline
+```
+
+
+```python
+img = cv2.imread("Mushroom.jpg")
+plt.imshow(img)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b8c8f9690>
+
+
+
+
+![png](output_3_1.png)
+
+
+
+```python
+edges = cv2.Canny(image = img, threshold1 = 127, threshold2 = 127)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b8c483fd0>
+
+
+
+
+![png](output_4_1.png)
+
+
+
+```python
+med_value = np.median(img)
+med_value
+```
+
+
+
+
+    45.0
+
+
+
+
+```python
+# Let's change the threshold limits
+lower = int(max(0, 0.7*med_value))
+upper = int(min(225,1.3*med_value))
+
+edges = cv2.Canny(img, threshold1 = lower, threshold2 = upper)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84ce6d10>
+
+
+
+
+![png](output_6_1.png)
+
+
+
+```python
+edges = cv2.Canny(image = img, threshold1 = lower, threshold2 = upper+100)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84ccd850>
+
+
+
+
+![png](output_7_1.png)
+
+
+
+```python
+# Let's work with blurring
+blurred_img = cv2.blur(img, ksize = (5,5))
+
+edges = cv2.Canny(image = blurred_img,
+                 threshold1 = lower,
+                 threshold2 = upper)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84c32bd0>
+
+
+
+
+![png](output_8_1.png)
+
+
+
+```python
+# Let's increase the kernel size
+blurred_img = cv2.blur(img, ksize = (7,7))
+
+edges = cv2.Canny(image = blurred_img,
+                 threshold1 = lower,
+                 threshold2 = upper)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84b9acd0>
+
+
+
+
+![png](output_9_1.png)
+
+
+
+```python
+# We can increase the upper threshold limit to 50
+blurred_img = cv2.blur(img, ksize = (5,5))
+
+edges = cv2.Canny(image = blurred_img,
+                 threshold1 = lower,
+                 threshold2 = upper + 50)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84b81ed0>
+
+
+
+
+![png](output_10_1.png)
+
+
+
+```python
+# Now let's change it to 100
+blurred_img = cv2.blur(img, ksize = (5,5))
+
+edges = cv2.Canny(image = blurred_img,
+                 threshold1 = lower,
+                 threshold2 = upper + 100)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84ae8fd0>
+
+
+
+
+![png](output_11_1.png)
+
+
+
+```python
+# Now let's change the kernel size and upper limit
+blurred_img = cv2.blur(img, ksize = (7,7))
+
+edges = cv2.Canny(image = blurred_img,
+                 threshold1 = lower,
+                 threshold2 = upper + 100)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84a5d150>
+
+
+
+
+![png](output_12_1.png)
+
+
+
+```python
+blurred_img = cv2.blur(img, ksize = (7,7))
+
+edges = cv2.Canny(image = blurred_img,
+                 threshold1 = lower,
+                 threshold2 = upper + 60)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b84a432d0>
+
+
+
+
+![png](output_13_1.png)
+
+
+
+```python
+blurred_img = cv2.blur(img, ksize = (8,8))
+
+edges = cv2.Canny(image = blurred_img,
+                 threshold1 = lower,
+                 threshold2 = upper)
+
+plt.imshow(edges)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f4b849ad350>
+
+
+
+
+![png](output_14_1.png)
+
+
+
+# Object Detection
+
+In this section, we used Open CV for phenotyping purposes and object detection.
+
+
+```python
+import cv2
+```
+
+
+```python
+import numpy as np
+```
+
+
+```python
+import matplotlib.pyplot as plt
+```
+
+
+```python
+%matplotlib inline
+```
+
+
+```python
+# Let's load in the training flower
+full = cv2.imread('Training_Sunflower.jpg')
+```
+
+
+```python
+# Let's convert the color
+full = cv2.cvtColor(full, cv2.COLOR_BGR2RGB)
+```
+
+
+```python
+plt.imshow(full)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f1e7812cc10>
+
+
+
+
+![png](output_6_1.png)
+
+
+
+```python
+# Now we will upload the testing flower
+test = cv2.imread('Testing_Sunflower.jpg')
+```
+
+
+```python
+test = cv2.cvtColor(test, cv2.COLOR_BGR2RGB)
+```
+
+
+```python
+plt.imshow(test)
+```
+
+
+
+
+    <matplotlib.image.AxesImage at 0x7f1e78095790>
+
+
+
+
+![png](output_9_1.png)
+
+
+
+```python
+print('Test image shape:', test.shape)
+print('Training image shape', full.shape)
+```
+
+    Test image shape: (497, 750, 3)
+    Training image shape (251, 201, 3)
+
+
+
+```python
+methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+```
+
+
+```python
+for m in methods:
+    
+    test_copy = test.copy()
+    method = eval(m)
+    
+    res = cv2.matchTemplate(test_copy, full, method)
+    
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+    
+    if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+        top_left = min_loc
+    else:
+        top_left = max_loc
+        
+    height, width, channels = full.shape
+    bottom_right = (top_left[0] + width, top_left[1] + height)
+    
+    cv2.rectangle(test_copy, top_left, bottom_right, (255,0,0),10)
+    
+    plt.subplot(121)
+    plt.imshow(res)
+    plt.title("Heatmap of template matching")
+    plt.subplot(122)
+    plt.imshow(test_copy)
+    plt.title('Detection of template')
+    
+    plt.suptitle(m)
+    
+    plt.show()
+    print('\n')
+    print('\n')
+    
+```
+
+
+![png](output_12_0.png)
+
+
+    
+    
+    
+    
+
+
+
+![png](output_12_2.png)
+
+
+    
+    
+    
+    
+
+
+
+![png](output_12_4.png)
+
+
+    
+    
+    
+    
+
+
+
+![png](output_12_6.png)
+
+
+    
+    
+    
+    
+
+
+
+![png](output_12_8.png)
+
+
+    
+    
+    
+    
+
+
+
+![png](output_12_10.png)
+
+
+    
+    
+    
+# Feature Matching
+
+In this analysis, we used data to find specific objects.
+
+
+```python
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+```
+
+
+```python
+def display(img, cmap = 'gray'):
+    fig = plt.figure(figsize = (12, 10))
+    ax = fig.add_subplot(111)
+    ax.imshow(img, cmap = 'gray')
+```
+
+
+```python
+# We will be identifying a certain cereal box from a collage
+```
+
+
+```python
+lucky_charms = cv2.imread("cereal.jpg", 0)
+display(lucky_charms)
+```
+
+
+![png](output_3_0.png)
+
+
+
+```python
+cereals = cv2.imread('Allcereals.jpg', 0)
+display(cereals)
+```
+
+
+![png](output_4_0.png)
+
+
+
+```python
+# Let's do brute force matching
+orb = cv2.ORB_create()
+
+kp1, des1 = orb.detectAndCompute(lucky_charms, mask = None)
+kp2, des2 = orb.detectAndCompute(cereals, mask = None)
+```
+
+
+```python
+bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True)
+matches = bf.match(des1, des2)
+```
+
+
+```python
+# Let's sort our matches
+matches = sorted(matches, key = lambda x:x.distance)
+```
+
+
+```python
+lucky_charms_matches = cv2.drawMatches(lucky_charms, kp1, cereals, kp2, matches[:25], None, flags = 2)
+```
+
+
+```python
+display(lucky_charms_matches)
+```
+
+
+![png](output_9_0.png)
+
+
+
+```python
+# Let's sift 
+sift = cv2.SIFT_create()
+```
+
+
+```python
+kp1, des1 = sift.detectAndCompute(lucky_charms, None)
+kp2, des2 = sift.detectAndCompute(cereals, None)
+```
+
+
+```python
+bf = cv2.BFMatcher()
+matches = bf.knnMatch(des1, des2, k=2)
+```
+
+
+```python
+# We can apply a ratio test
+good = []
+
+for match1, match2 in matches:
+    if match1.distance < 0.75*match2.distance:
+        good.append([match1])
+```
+
+
+```python
+print('Length of total matches:', len(matches))
+print('Length of good matches:', len(good))
+```
+
+    Length of total matches: 2689
+    Length of good matches: 46
+
+
+
+```python
+sift_matches = cv2.drawMatchesKnn(lucky_charms, kp1, cereals, kp2, good, None, flags = 2)
+display(sift_matches)
+```
+
+
+![png](output_15_0.png)
+
+
+
+```python
+# Let's do flan base matching
+sift = cv2.SIFT_create()
+
+kp1, des1 = sift.detectAndCompute(lucky_charms, None)
+kp2, des2 = sift.detectAndCompute(cereals, None)
+```
+
+
+```python
+flann_index_KDtree = 0
+index_params = dict(algorithm = flann_index_KDtree, trees = 5)
+search_params = dict(checks = 50)
+```
+
+
+```python
+# Now we can set parameters
+flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+matches = flann.knnMatch(des1, des2, k = 2)
+
+good =[]
+
+for match1, match2, in matches:
+    if match1.distance < 0.75*match2.distance:
+        good.append([match1])
+```
+
+
+```python
+flann_matches = cv2.drawMatchesKnn(lucky_charms, kp1, cereals, kp2, good, None, flags = 0)
+display(flann_matches)
+```
+
+
+![png](output_19_0.png)
+
+
+
+```python
+# Let's add a mask
+sift = cv2.SIFT_create()
+
+kp1, des1 = sift.detectAndCompute(lucky_charms, None)
+kp2, des2 = sift.detectAndCompute(cereals, None)
+```
+
+
+```python
+flann_index_KDTree = 0
+index_params = dict(algorithm = flann_index_KDtree, trees = 5)
+search_params = dict(checks = 50)
+```
+
+
+```python
+flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+matches = flann.knnMatch(des1, des2, k = 2)
+```
+
+
+```python
+matchesMask = [[0,0] for i in range(len(matches))]
+```
+
+
+```python
+# Let's reduce the distance between features to get a stronger match
+for i, (match1, match2) in enumerate(matches):
+    if match1.distance < 0.75*match2.distance:
+        matchesMask[i] = [1,0]
+        
+draw_params = dict(matchColor = (0,255,0),
+                   singlePointColor = (255,0,0),
+                   matchesMask = matchesMask,
+                   flags = 0)
+```
+
+
+```python
+flann_matches = cv2.drawMatchesKnn(lucky_charms, kp1, cereals, kp2, matches, None, **draw_params)
+
+display(flann_matches)
+```
+
+
+![png](output_25_0.png)
+
+
+
+
 
 
 
